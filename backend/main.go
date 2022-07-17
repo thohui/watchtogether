@@ -1,7 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"github.com/thohui/watchtogether/server"
+)
 
 func main() {
-	fmt.Println("hello, world")
+	server := server.New()
+	server.Start()
 }
