@@ -51,6 +51,19 @@ func (r *Room) remove(conn *connection) {
 	delete(r.connections, conn.Id)
 }
 
+func (r *Room) broadcast(sender, message string) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+	payload := structures.ChatMessagePayload(sender, message)
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return
+	}
+	for _, conn := range r.connections {
+		conn.WriteMessage(websocket.TextMessage, data)
+	}
+}
+
 func (r *Room) handle(conn *connection) {
 	defer r.remove(conn)
 	for {
@@ -66,6 +79,13 @@ func (r *Room) handle(conn *connection) {
 				continue
 			}
 			switch incoming.Type {
+			case "chat":
+				chatMessage := &structures.IncomingChatMessage{}
+				err := json.Unmarshal(msg, chatMessage)
+				if err != nil {
+					return
+				}
+				r.broadcast(conn.Name, chatMessage.Message)
 			}
 		}
 	}
