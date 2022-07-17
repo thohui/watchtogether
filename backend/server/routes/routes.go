@@ -10,5 +10,6 @@ func Setup(app *fiber.App, store *store.Store) {
 		return c.SendString("Hello, World!")
 	})
 	app.Use("/ws", websocketMiddleware)
-	app.Get("/ws/:id", websocketRoute(store))
+	app.Get("/ws/:id", websocketHandler(store))
+	app.Post("/room/create", createRoomHandler(store))
 }

@@ -15,7 +15,7 @@ func websocketMiddleware(c *fiber.Ctx) error {
 
 }
 
-func websocketRoute(store *store.Store) func(c *fiber.Ctx) error {
+func websocketHandler(store *store.Store) func(c *fiber.Ctx) error {
 	return websocket.New(func(c *websocket.Conn) {
 		id := c.Params("id")
 		room := store.Get(id)
