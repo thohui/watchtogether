@@ -17,10 +17,10 @@ type createRoomResponse struct {
 func createRoomHandler(store *store.Store) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		body := new(body)
-		if err := c.BodyParser(body); err != nil {
+		if err := c.BodyParser(body); err != nil || body.VideoId == "" {
 			return c.Status(400).SendString("Invalid request")
 		}
-		// TODO: validate video id
+		// TODO: validate video id using the youtube api
 		room := room.New(body.VideoId)
 		store.Add(room)
 		return c.Status(200).JSON(createRoomResponse{Id: room.Id})
