@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:80";
+const URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost";
 
 async function getRoomRequest(id: string) {
   // ensure we are only fetching on the client

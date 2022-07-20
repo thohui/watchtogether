@@ -1,5 +1,7 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
+import Chat from "../../components/room/Chat";
+import { WebSocketProvider } from "../../context/websocket";
 import { useGetRoom } from "../../hooks/room";
 
 const Room: NextPage = () => {
@@ -12,7 +14,11 @@ const Room: NextPage = () => {
   if (!exists) {
     return <p>Room does not exist</p>;
   }
-  return <h1>You entered a room</h1>;
+  return (
+    <WebSocketProvider roomId={id as string}>
+      <Chat />
+    </WebSocketProvider>
+  );
 };
 
 export default Room;
