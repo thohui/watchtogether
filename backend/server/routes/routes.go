@@ -14,4 +14,5 @@ func Setup(app *fiber.App, store *store.Store) {
 	app.Use("/ws", websocketMiddleware)
 	app.Get("/ws/:id", websocketHandler(store))
 	app.Post("/room/create", createRoomHandler(store))
+	app.Post("/room/:id", getRoomHandler(store))
 }
