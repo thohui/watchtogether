@@ -1,9 +1,12 @@
 package server
 
 import (
+	"os"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/thohui/watchtogether/server/routes"
 	"github.com/thohui/watchtogether/store"
+	"github.com/thohui/watchtogether/youtube"
 )
 
 type Server struct {
@@ -14,7 +17,8 @@ type Server struct {
 func New() *Server {
 	app := fiber.New()
 	store := store.New()
-	routes.Setup(app, store)
+	service := youtube.New(os.Getenv("YOUTUBE_API_KEY"))
+	routes.Setup(app, store, service)
 	return &Server{app: app, store: store}
 }
 

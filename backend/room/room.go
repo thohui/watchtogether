@@ -7,6 +7,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/teris-io/shortid"
 	"github.com/thohui/watchtogether/structures"
+	"github.com/thohui/watchtogether/youtube"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -22,16 +23,16 @@ type Room struct {
 	Id          string
 	connections map[string]*connection
 	mutex       sync.Mutex
-	VideoId     string
+	video       youtube.Video
 	time        int32
 }
 
-func New(videoId string) *Room {
+func New(video youtube.Video) *Room {
 	return &Room{
 		Id:          shortid.MustGenerate(),
 		connections: make(map[string]*connection),
 		mutex:       sync.Mutex{},
-		VideoId:     videoId,
+		video:       video,
 		time:        0,
 	}
 }
