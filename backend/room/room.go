@@ -2,6 +2,7 @@ package room
 
 import (
 	"sync"
+	"sync/atomic"
 
 	"github.com/fasthttp/websocket"
 	jsoniter "github.com/json-iterator/go"
@@ -44,6 +45,9 @@ func (room *Room) Handle(conn *websocket.Conn) {
 	connection := &connection{Name: "User", Id: id, Host: len(room.connections) == 0, Conn: conn}
 	room.connections[id] = connection
 	room.mutex.Unlock()
+	time := atomic.LoadInt32(&room.time)
+	data, _ := json.Marshal(structures.InitPayload(room.video.ID, time))
+	connection.WriteMessage(websocket.TextMessage, data)
 	room.handle(connection)
 }
 func (r *Room) remove(conn *connection) {
