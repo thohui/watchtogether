@@ -1,8 +1,6 @@
 package routes
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/thohui/watchtogether/room"
 	"github.com/thohui/watchtogether/store"
@@ -39,9 +37,6 @@ func getRoomHandler(store *store.Store) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		body := new(body)
 		if err := c.BodyParser(body); err != nil || body.Id == "" {
-			if err != nil {
-				fmt.Println(string(c.Body()))
-			}
 			return c.Status(400).SendString("Invalid request")
 		}
 		room := store.Get(body.Id)
