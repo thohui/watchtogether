@@ -1,6 +1,6 @@
 import { createContext, useEffect, useRef } from "react";
 import { useRoomStore } from "../hooks/store";
-import { ChatMessage, UnknownMessage } from "../types/room";
+import { ChatMessage, InitMessage, UnknownMessage } from "../types/room";
 
 interface ContextProps {
   websocket: WebSocket | null;
@@ -34,12 +34,17 @@ export const WebSocketProvider = ({ roomId, children }: Props) => {
       actions.setStatus("disconnected");
     };
     socket.onmessage = (event: MessageEvent) => {
-      const message: UnknownMessage = JSON.parse(event.data);
-      if (message.type === "chat") {
+      const unknownMessage: UnknownMessage = JSON.parse(event.data);
+      if (unknownMessage.type === "chat") {
+        const message: ChatMessage = unknownMessage.data;
         actions.appendMessage({
-          sender: message.data.sender,
-          message: message.data.message,
-        } as ChatMessage);
+          sender: message.sender,
+          message: message.message,
+        });
+      } else if (unknownMessage.type === "init") {
+        const message: InitMessage = unknownMessage.data;
+        actions.setVideoId(message.video_id);
+        actions.setTime(message.time);
       }
     };
     ws.current = socket;
