@@ -16,7 +16,6 @@ var json = jsoniter.ConfigCompatibleWithStandardLibrary
 type connection struct {
 	Name string
 	Id   string
-	Host bool
 	*websocket.Conn
 }
 
@@ -26,6 +25,7 @@ type Room struct {
 	mutex       sync.Mutex
 	video       youtube.Video
 	time        int32
+	host        string
 }
 
 func New(video youtube.Video) *Room {
@@ -35,6 +35,7 @@ func New(video youtube.Video) *Room {
 		mutex:       sync.Mutex{},
 		video:       video,
 		time:        0,
+		host:        "",
 	}
 }
 
@@ -42,7 +43,10 @@ func (room *Room) Handle(conn *websocket.Conn) {
 	room.mutex.Lock()
 	id := shortid.MustGenerate()
 	// TODO: generate a unique name
-	connection := &connection{Name: "User", Id: id, Host: len(room.connections) == 0, Conn: conn}
+	connection := &connection{Name: "User", Id: id, Conn: conn}
+	if len(room.connections) == 0 {
+		room.host = id
+	}
 	room.connections[id] = connection
 	room.mutex.Unlock()
 	time := atomic.LoadInt32(&room.time)
