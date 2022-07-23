@@ -11,7 +11,11 @@ interface ContextProps {
 
 export const WebSocketContext = createContext<ContextProps>({
   websocket: null,
-  actions: { sendChatMessage: () => {} },
+  actions: {
+    sendChatMessage: () => {
+      throw new Error("WebSocketContext is not initialized");
+    },
+  },
 });
 
 interface Props {

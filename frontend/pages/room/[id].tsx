@@ -1,6 +1,6 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import Chat from "../../components/room/Chat";
+import { Chat } from "../../components/room/Chat";
 import { WebSocketProvider } from "../../context/websocket";
 import { useGetRoom } from "../../hooks/room";
 

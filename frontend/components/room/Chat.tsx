@@ -1,6 +1,6 @@
 import { useRoomStore } from "../../hooks/store";
 
-export default function Chat() {
+export const Chat = () => {
   let messages = useRoomStore((state) => state.messages);
   return (
     <div>
@@ -13,4 +13,4 @@ export default function Chat() {
       })}
     </div>
   );
-}
+};

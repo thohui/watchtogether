@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 const URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost";
 
-async function getRoomRequest(id: string) {
+const getRoomRequest = async (id: string) => {
   // ensure we are only fetching on the client
   if (typeof window === "undefined") {
     return false;
@@ -18,9 +18,9 @@ async function getRoomRequest(id: string) {
     },
   });
   return response.status === 200;
-}
+};
 
-export function useGetRoom(id: string) {
+export const useGetRoom = (id: string) => {
   const [loading, setLoading] = useState(true);
   const [exists, setExists] = useState(false);
   useEffect(() => {
@@ -32,4 +32,4 @@ export function useGetRoom(id: string) {
     getRoom();
   }, [id]);
   return { loading, exists };
-}
+};
