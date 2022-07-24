@@ -1,14 +1,16 @@
 package room
 
 import (
+	"fmt"
 	"sync"
-	"sync/atomic"
+	"time"
 
 	"github.com/fasthttp/websocket"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/teris-io/shortid"
 	"github.com/thohui/watchtogether/structures"
 	"github.com/thohui/watchtogether/youtube"
+	"go.uber.org/atomic"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -24,33 +26,37 @@ type Room struct {
 	connections map[string]*connection
 	mutex       sync.Mutex
 	video       youtube.Video
-	time        int32
-	host        string
+	time        *atomic.Int32
+	host        *atomic.String
+	paused      *atomic.Bool
+	pauseChan   chan bool
 }
 
 func New(video youtube.Video) *Room {
-	return &Room{
+	r := &Room{
 		Id:          shortid.MustGenerate(),
 		connections: make(map[string]*connection),
 		mutex:       sync.Mutex{},
 		video:       video,
-		time:        0,
-		host:        "",
+		time:        atomic.NewInt32(0),
+		host:        atomic.NewString(""),
+		paused:      atomic.NewBool(true),
+		pauseChan:   make(chan bool),
 	}
+	go r.startRoomTask()
+	return r
 }
-
 func (room *Room) Handle(conn *websocket.Conn) {
 	room.mutex.Lock()
 	id := shortid.MustGenerate()
 	// TODO: generate a unique name
 	connection := &connection{Name: "User", Id: id, Conn: conn}
 	if len(room.connections) == 0 {
-		room.host = id
+		room.host.Store(id)
 	}
 	room.connections[id] = connection
 	room.mutex.Unlock()
-	time := atomic.LoadInt32(&room.time)
-	data, _ := json.Marshal(structures.InitPayload(room.video.ID, time))
+	data, _ := json.Marshal(structures.InitPayload(room.video.ID, room.time.Inc(), room.host.String() == id, room.paused.Load()))
 	connection.WriteMessage(websocket.TextMessage, data)
 	room.handle(connection)
 }
@@ -60,14 +66,9 @@ func (r *Room) remove(conn *connection) {
 	delete(r.connections, conn.Id)
 }
 
-func (r *Room) broadcast(sender, message string) {
+func (r *Room) broadcast(data []byte) {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
-	payload := structures.ChatMessagePayload(sender, message)
-	data, err := json.Marshal(payload)
-	if err != nil {
-		return
-	}
 	for _, conn := range r.connections {
 		conn.WriteMessage(websocket.TextMessage, data)
 	}
@@ -94,7 +95,60 @@ func (r *Room) handle(conn *connection) {
 				if err != nil {
 					return
 				}
-				r.broadcast(conn.Name, chatMessage.Message)
+				payload := structures.ChatMessagePayload(conn.Name, chatMessage.Message)
+				data, _ := json.Marshal(payload)
+				r.broadcast(data)
+			case "pause":
+				if r.host.Load() != conn.Id {
+					return
+				}
+				paused := r.paused.Load()
+				if paused {
+					return
+				}
+				r.pauseChan <- true
+				r.paused.Store(true)
+				payload := structures.VideoUpdatePayload(r.time.Load(), true)
+				data, _ := json.Marshal(payload)
+				r.broadcast(data)
+			case "resume":
+				if r.host.Load() != conn.Id {
+					return
+				}
+				paused := r.paused.Load()
+				if !paused {
+					return
+				}
+				r.pauseChan <- false
+				r.paused.Store(false)
+				payload := structures.VideoUpdatePayload(r.time.Load(), false)
+				data, _ := json.Marshal(payload)
+				r.broadcast(data)
+			}
+		}
+	}
+}
+func (r *Room) startRoomTask() {
+	var ticker *time.Ticker = &time.Ticker{}
+	for {
+		select {
+		case val := <-r.pauseChan:
+			if val {
+				ticker.Stop()
+			} else {
+				ticker = time.NewTicker(time.Second * 1)
+			}
+		case <-ticker.C:
+			if r.time.Load() > int32(r.video.Duration) {
+				fmt.Println("video has ended")
+				ticker.Stop()
+			}
+			time := r.time.Inc()
+			if time%5 == 0 {
+				fmt.Println("sending payload")
+				payload := structures.VideoUpdatePayload(time, r.paused.Load())
+				data, _ := json.Marshal(payload)
+				r.broadcast(data)
 			}
 		}
 	}
