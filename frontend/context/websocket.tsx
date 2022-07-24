@@ -1,11 +1,18 @@
 import { createContext, useEffect, useRef } from "react";
 import { useRoomStore } from "../hooks/store";
-import { ChatMessage, InitMessage, UnknownMessage } from "../types/room";
+import {
+  ChatMessage,
+  InitMessage,
+  UnknownMessage,
+  VideoUpdateMessage,
+} from "../types/room";
 
 interface ContextProps {
   websocket: WebSocket | null;
   actions: {
     sendChatMessage: (message: string) => void;
+    sendPauseMessage: () => void;
+    sendResumeMessage: () => void;
   };
 }
 
@@ -13,6 +20,12 @@ export const WebSocketContext = createContext<ContextProps>({
   websocket: null,
   actions: {
     sendChatMessage: () => {
+      throw new Error("WebSocketContext is not initialized");
+    },
+    sendPauseMessage: () => {
+      throw new Error("WebSocketContext is not initialized");
+    },
+    sendResumeMessage: () => {
       throw new Error("WebSocketContext is not initialized");
     },
   },
@@ -39,16 +52,28 @@ export const WebSocketProvider = ({ roomId, children }: Props) => {
     };
     socket.onmessage = (event: MessageEvent) => {
       const unknownMessage: UnknownMessage = JSON.parse(event.data);
-      if (unknownMessage.type === "chat") {
-        const message: ChatMessage = unknownMessage.data;
-        actions.appendMessage({
-          sender: message.sender,
-          message: message.message,
-        });
-      } else if (unknownMessage.type === "init") {
-        const message: InitMessage = unknownMessage.data;
-        actions.setVideoId(message.video_id);
-        actions.setTime(message.time);
+      switch (unknownMessage.type) {
+        case "chat": {
+          const message: ChatMessage = unknownMessage.data;
+          actions.appendMessage({
+            sender: message.sender,
+            message: message.message,
+          });
+          break;
+        }
+        case "init": {
+          const message: InitMessage = unknownMessage.data;
+          actions.setVideoId(message.video_id);
+          actions.setTime(message.time);
+          actions.setHost(message.host);
+          actions.setPaused(message.paused);
+          break;
+        }
+        case "video_update":
+          const message: VideoUpdateMessage = unknownMessage.data;
+          actions.setTime(message.time);
+          actions.setPaused(message.paused);
+          break;
       }
     };
     ws.current = socket;
@@ -63,6 +88,18 @@ export const WebSocketProvider = ({ roomId, children }: Props) => {
       sendChatMessage: (message: string) => {
         if (ws.current) {
           const payload = JSON.stringify({ type: "chat", message: message });
+          ws.current.send(payload);
+        }
+      },
+      sendPauseMessage: () => {
+        if (ws.current) {
+          const payload = JSON.stringify({ type: "pause" });
+          ws.current.send(payload);
+        }
+      },
+      sendResumeMessage: () => {
+        if (ws.current) {
+          const payload = JSON.stringify({ type: "resume" });
           ws.current.send(payload);
         }
       },
