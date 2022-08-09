@@ -12,9 +12,10 @@ export const useFetch = ({ url, body, method }: FetchArgs) => {
   const [data, setData] = useState<any>();
   useEffect(() => {
     async function fetchData() {
-      if (typeof window === "undefined" || !url) {
+      if (!url) {
         return;
       }
+
       try {
         const response = await fetch(url, {
           method,
