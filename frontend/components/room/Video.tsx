@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import ReactPlayer from "react-player";
+
 import { useRoomStore } from "../../hooks/store";
 
 export const Video = () => {
@@ -15,10 +16,16 @@ export const Video = () => {
 
   return (
     <ReactPlayer
-      url={videoId ? `https://www.youtube.com/watch?v=${videoId}` : undefined}
-      controls={true}
+      width="100%"
       ref={ref}
       playing={!paused}
-    ></ReactPlayer>
+      url={videoId ? `https://youtube.com/watch?v=${videoId}` : undefined}
+      onReady={(player) => {
+        paused
+          ? player.getInternalPlayer().pauseVideo()
+          : player.getInternalPlayer().playVideo();
+        player.seekTo(time);
+      }}
+    />
   );
 };
