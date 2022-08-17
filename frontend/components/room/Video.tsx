@@ -13,18 +13,22 @@ export const Video = () => {
       ref.current.seekTo(time);
     }
   }, [time]);
-
   return (
     <ReactPlayer
       width="100%"
-      ref={ref}
       playing={!paused}
+      ref={ref}
+      controls={true}
       url={videoId ? `https://youtube.com/watch?v=${videoId}` : undefined}
-      onReady={(player) => {
-        paused
-          ? player.getInternalPlayer().pauseVideo()
-          : player.getInternalPlayer().playVideo();
-        player.seekTo(time);
+      onPause={() => {
+        if (!paused) {
+          ref.current?.getInternalPlayer().playVideo();
+        }
+      }}
+      onPlay={() => {
+        if (paused) {
+          ref.current?.getInternalPlayer().pauseVideo();
+        }
       }}
     />
   );
