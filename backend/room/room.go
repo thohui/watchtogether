@@ -1,7 +1,6 @@
 package room
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
@@ -9,6 +8,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/teris-io/shortid"
 	"github.com/thohui/watchtogether/structures"
+	"github.com/thohui/watchtogether/util"
 	"github.com/thohui/watchtogether/youtube"
 	"go.uber.org/atomic"
 )
@@ -46,11 +46,12 @@ func New(video youtube.Video) *Room {
 	go r.startRoomTask()
 	return r
 }
+
 func (room *Room) Handle(conn *websocket.Conn) {
 	room.mutex.Lock()
 	id := shortid.MustGenerate()
-	// TODO: generate a unique name
-	connection := &connection{Name: "User", Id: id, Conn: conn}
+	name := util.GenerateRandomName()
+	connection := &connection{Name: name, Id: id, Conn: conn}
 	if len(room.connections) == 0 {
 		room.host.Store(id)
 	}
@@ -60,6 +61,7 @@ func (room *Room) Handle(conn *websocket.Conn) {
 	connection.WriteMessage(websocket.TextMessage, data)
 	room.handle(connection)
 }
+
 func (r *Room) remove(conn *connection) {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
@@ -128,6 +130,7 @@ func (r *Room) handle(conn *connection) {
 		}
 	}
 }
+
 func (r *Room) startRoomTask() {
 	var ticker *time.Ticker = &time.Ticker{}
 	for {
@@ -140,12 +143,11 @@ func (r *Room) startRoomTask() {
 			}
 		case <-ticker.C:
 			if r.time.Load() > int32(r.video.Duration) {
-				fmt.Println("video has ended")
 				ticker.Stop()
 			}
 			time := r.time.Inc()
+			// we are only sending a sync update every 5 seconds
 			if time%5 == 0 {
-				fmt.Println("sending payload")
 				payload := structures.VideoUpdatePayload(time, r.paused.Load())
 				data, _ := json.Marshal(payload)
 				r.broadcast(data)
