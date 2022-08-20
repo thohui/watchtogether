@@ -4,7 +4,7 @@ import { useRoomStore } from "../../hooks/store";
 
 export const Chat = () => {
   return (
-    <div className="flex flex-col rounded-lg w-1/3 h-full border pt-5">
+    <div className="flex flex-col rounded-lg border border-neutral pt-5">
       <Messages />
       <TextArea />
     </div>
@@ -24,8 +24,9 @@ const Messages = () => {
       <div className="flex flex-col">
         {messages.map((message, index) => {
           return (
-            <span className="font-black" key={index}>
-              {message.sender}: {message.message}
+            <span className="max-w-xl" key={index}>
+              <span className="font-bold">{message.sender}:</span>{" "}
+              {message.message}
             </span>
           );
         })}
@@ -35,21 +36,23 @@ const Messages = () => {
   );
 };
 
-// TODO: input validation
 const TextArea = () => {
   const context = useContext(WebSocketContext);
   const submit = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter") {
+      e.preventDefault();
       const message = e.target.value;
+      if (message.length === 0) return;
       context.actions.sendChatMessage(message);
       e.target.value = "";
+      e.target.selectionStart = 0;
     }
   };
   return (
     <textarea
-      className="textarea textarea-bordered resize-none whitespace-nowrap overflow-x-scroll mt-5"
-      rows={1}
+      className="textarea textarea-bordered resize-none mt-3"
       maxLength={100}
+      rows={1}
       onKeyDown={submit}
     ></textarea>
   );
