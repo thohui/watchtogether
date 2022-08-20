@@ -5,6 +5,7 @@ export interface UnknownMessage {
 export interface ChatMessage {
   sender: string;
   message: string;
+  owner: boolean;
 }
 export interface InitMessage {
   video_id: string;

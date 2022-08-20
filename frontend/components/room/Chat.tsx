@@ -24,8 +24,18 @@ const Messages = () => {
       <div className="flex flex-col">
         {messages.map((message, index) => {
           return (
-            <span className="max-w-xl" key={index}>
-              <span className="font-bold">{message.sender}:</span>{" "}
+            <span
+              className="max-w-xl text-gray-300
+            "
+              key={index}
+            >
+              <span
+                className={
+                  message.owner ? "font-bold text-red-500" : "font-bold"
+                }
+              >
+                {message.sender}:
+              </span>{" "}
               {message.message}
             </span>
           );

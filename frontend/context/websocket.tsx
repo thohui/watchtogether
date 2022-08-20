@@ -55,10 +55,7 @@ export const WebSocketProvider = ({ roomId, children }: Props) => {
       switch (unknownMessage.type) {
         case "chat": {
           const message: ChatMessage = unknownMessage.data;
-          actions.appendMessage({
-            sender: message.sender,
-            message: message.message,
-          });
+          actions.appendMessage(message);
           break;
         }
         case "init": {
