@@ -4,7 +4,7 @@ import { Navbar } from "../components/navigation/Navbar";
 
 const Home: NextPage = () => {
   return (
-    <div className="container mx-auto max-h-screen p-3">
+    <div className="container mx-auto">
       <Navbar />
       <div className="grid place-items-center">
         <h1 className="text-5xl py-3">Create Room</h1>

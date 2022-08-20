@@ -26,14 +26,14 @@ const Room: NextPage = () => {
   }
   return (
     <WebSocketProvider roomId={id as string}>
-      <div className="container mx-auto max-h-screen p-3">
+      <div className="container mx-auto">
         <Navbar />
-        <div className="grid place-items-center pt-8">
-          <div className="flex flex-col w-1/2 pb-20">
+        <div className="grid place-items-center pt-8 max-h-1/2">
+          <div className="flex flex-col space-y-3">
             <Video />
             <PauseAction />
+            <Chat />
           </div>
-          <Chat />
         </div>
       </div>
     </WebSocketProvider>
