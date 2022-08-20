@@ -5,14 +5,15 @@ type payloadBase struct {
 	Data interface{} `json:"data"`
 }
 
-func ChatMessagePayload(sender string, message string) payloadBase {
+func ChatMessagePayload(sender string, message string, owner bool) payloadBase {
 	type chatMessage struct {
 		Sender  string `json:"sender"`
 		Message string `json:"message"`
+		Owner   bool   `json:"owner"`
 	}
 	return payloadBase{
 		Type: "chat",
-		Data: chatMessage{sender, message},
+		Data: chatMessage{sender, message, owner},
 	}
 }
 

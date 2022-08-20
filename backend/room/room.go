@@ -97,7 +97,7 @@ func (r *Room) handle(conn *connection) {
 				if err != nil {
 					return
 				}
-				payload := structures.ChatMessagePayload(conn.Name, chatMessage.Message)
+				payload := structures.ChatMessagePayload(conn.Name, chatMessage.Message, r.host.Load() == conn.Id)
 				data, _ := json.Marshal(payload)
 				r.broadcast(data)
 			case "pause":
