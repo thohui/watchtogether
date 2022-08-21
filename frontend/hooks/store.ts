@@ -2,7 +2,6 @@ import create from "zustand";
 import { ChatMessage } from "../types/room";
 
 interface Store {
-  status: "connected" | "disconnected";
   messages: ChatMessage[];
   videoId: string | null;
   time: number;
@@ -10,7 +9,6 @@ interface Store {
   paused: boolean;
   actions: {
     appendMessage: (message: ChatMessage) => void;
-    setStatus: (status: "connected" | "disconnected") => void;
     setVideoId: (videoId: string | null) => void;
     setTime: (time: number) => void;
     setHost: (host: boolean) => void;
@@ -19,7 +17,6 @@ interface Store {
 }
 
 export const useRoomStore = create<Store>((set) => ({
-  status: "disconnected",
   messages: [],
   videoId: null,
   time: 0,
@@ -30,12 +27,6 @@ export const useRoomStore = create<Store>((set) => ({
       set((state) => ({
         ...state,
         messages: [...state.messages, message],
-      }));
-    },
-    setStatus: (status: "connected" | "disconnected") => {
-      set((state) => ({
-        ...state,
-        status,
       }));
     },
     setVideoId: (videoId: string | null) => {

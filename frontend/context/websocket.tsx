@@ -44,12 +44,8 @@ export const WebSocketProvider = ({ roomId, children }: Props) => {
   const actions = useRoomStore((state) => state.actions);
   useEffect(() => {
     const socket = new WebSocket(url);
-    socket.onopen = () => {
-      actions.setStatus("connected");
-    };
-    socket.onclose = () => {
-      actions.setStatus("disconnected");
-    };
+    socket.onopen = () => {};
+    socket.onclose = () => {};
     socket.onmessage = (event: MessageEvent) => {
       const unknownMessage: UnknownMessage = JSON.parse(event.data);
       switch (unknownMessage.type) {
