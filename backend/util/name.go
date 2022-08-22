@@ -11,5 +11,5 @@ var secondPart = []string{"Apple", "Pear", "Banana", "Kiwi", "Grape", "Grapefrui
 
 func GenerateRandomName() string {
 	var rand1, rand2 = rand.Intn(len(firstPart)), rand.Intn(len(secondPart))
-	return firstPart[rand1] + secondPart[rand2] + strconv.Itoa(rand1+rand2)
+	return firstPart[rand1] + secondPart[rand2] + strconv.Itoa(rand.Intn(100))
 }
