@@ -44,28 +44,27 @@ export const WebSocketProvider = ({ roomId, children }: Props) => {
   const actions = useRoomStore((state) => state.actions);
   useEffect(() => {
     const socket = new WebSocket(url);
-    socket.onopen = () => {};
-    socket.onclose = () => {};
+    socket.onclose = () => {
+      window.location.replace("/");
+    };
     socket.onmessage = (event: MessageEvent) => {
       const unknownMessage: UnknownMessage = JSON.parse(event.data);
       switch (unknownMessage.type) {
-        case "chat": {
-          const message: ChatMessage = unknownMessage.data;
-          actions.appendMessage(message);
+        case "chat":
+          const chatMessage: ChatMessage = unknownMessage.data;
+          actions.appendMessage(chatMessage);
           break;
-        }
-        case "init": {
-          const message: InitMessage = unknownMessage.data;
-          actions.setVideoId(message.video_id);
-          actions.setTime(message.time);
-          actions.setHost(message.host);
-          actions.setPaused(message.paused);
+        case "init":
+          const initMessage: InitMessage = unknownMessage.data;
+          actions.setVideoId(initMessage.video_id);
+          actions.setTime(initMessage.time);
+          actions.setHost(initMessage.host);
+          actions.setPaused(initMessage.paused);
           break;
-        }
         case "video_update":
-          const message: VideoUpdateMessage = unknownMessage.data;
-          actions.setTime(message.time);
-          actions.setPaused(message.paused);
+          const updateMessage: VideoUpdateMessage = unknownMessage.data;
+          actions.setTime(updateMessage.time);
+          actions.setPaused(updateMessage.paused);
           break;
       }
     };
