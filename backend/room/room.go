@@ -22,26 +22,28 @@ type connection struct {
 }
 
 type Room struct {
-	Id          string
-	connections map[string]*connection
-	mutex       sync.Mutex
-	video       youtube.Video
-	time        *atomic.Int32
-	host        *atomic.String
-	paused      *atomic.Bool
-	pauseChan   chan bool
+	Id           string
+	connections  map[string]*connection
+	mutex        sync.Mutex
+	video        youtube.Video
+	time         *atomic.Int32
+	host         *atomic.String
+	paused       *atomic.Bool
+	pauseChan    chan bool
+	ShutdownChan chan<- string
 }
 
 func New(video youtube.Video) *Room {
 	r := &Room{
-		Id:          shortid.MustGenerate(),
-		connections: make(map[string]*connection),
-		mutex:       sync.Mutex{},
-		video:       video,
-		time:        atomic.NewInt32(0),
-		host:        atomic.NewString(""),
-		paused:      atomic.NewBool(true),
-		pauseChan:   make(chan bool),
+		Id:           shortid.MustGenerate(),
+		connections:  make(map[string]*connection),
+		mutex:        sync.Mutex{},
+		video:        video,
+		time:         atomic.NewInt32(0),
+		host:         atomic.NewString(""),
+		paused:       atomic.NewBool(true),
+		pauseChan:    make(chan bool),
+		ShutdownChan: nil,
 	}
 	go r.startRoomTask()
 	return r
@@ -77,12 +79,24 @@ func (r *Room) broadcast(data []byte) {
 }
 
 func (r *Room) handle(conn *connection) {
-	defer r.remove(conn)
+	defer func() {
+		r.remove(conn)
+		if len(r.connections) > 0 {
+			if r.host.String() == conn.Id {
+				for _, conn := range r.connections {
+					r.host.Store(conn.Id)
+					break
+				}
+			}
+		} else {
+			r.ShutdownChan <- r.Id
+		}
+	}()
 	for {
 		messageType, msg, err := conn.ReadMessage()
 		if err != nil {
 			conn.Close()
-			return
+			break
 		}
 		if messageType == websocket.TextMessage {
 			incoming := &structures.IncomingMessage{}
@@ -128,11 +142,12 @@ func (r *Room) handle(conn *connection) {
 				r.broadcast(data)
 			}
 		}
+
 	}
 }
 
 func (r *Room) startRoomTask() {
-	var ticker *time.Ticker = &time.Ticker{}
+	var ticker = &time.Ticker{}
 	for {
 		select {
 		case val := <-r.pauseChan:
@@ -142,16 +157,28 @@ func (r *Room) startRoomTask() {
 				ticker = time.NewTicker(time.Second * 1)
 			}
 		case <-ticker.C:
-			if r.time.Load() > int32(r.video.Duration) {
+			if r.time.Load() < int32(r.video.Duration) {
+				time := r.time.Inc()
+				// we are only sending a sync update every 5 seconds
+				if time%5 == 0 {
+					payload := structures.VideoUpdatePayload(time, r.paused.Load())
+					data, _ := json.Marshal(payload)
+					r.broadcast(data)
+				}
+			} else {
 				ticker.Stop()
-			}
-			time := r.time.Inc()
-			// we are only sending a sync update every 5 seconds
-			if time%5 == 0 {
-				payload := structures.VideoUpdatePayload(time, r.paused.Load())
-				data, _ := json.Marshal(payload)
-				r.broadcast(data)
+				time.Sleep(time.Second * 5)
+				r.shutdown()
 			}
 		}
 	}
+}
+func (r *Room) shutdown() {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+	for _, conn := range r.connections {
+		// hacky solution to close the connection outside of the handle function goroutine
+		conn.SetReadDeadline(time.Date(0, 0, 0, 0, 0, 0, 0, time.UTC))
+	}
+	r.ShutdownChan <- r.Id
 }
