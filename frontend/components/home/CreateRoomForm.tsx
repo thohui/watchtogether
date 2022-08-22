@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { URL } from "../../utils/constants";
 import { VideoPreview } from "./VideoPreview";
@@ -26,22 +26,16 @@ export const CreateRoomForm = () => {
   };
   const url = watch("video_url");
 
-  const regex = useMemo(
-    () =>
-      /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/,
-    []
-  );
-
   useEffect(() => {
     if (url) {
-      const match = url.match(regex);
+      const match = matchURL(url);
       if (match) {
         setVideoId(match[1]);
       } else {
         setVideoId(undefined);
       }
     }
-  }, [url, regex]);
+  }, [url]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -54,9 +48,8 @@ export const CreateRoomForm = () => {
           className="input input-bordered w-full lg:max-w-lg max-w-sm"
           {...register("video_url", {
             required: true,
-            pattern: {
-              value: regex,
-              message: "Invalid YouTube URL",
+            validate: (value: string) => {
+              return matchURL(value) ? true : "Invalid URL";
             },
           })}
         />
@@ -70,4 +63,10 @@ export const CreateRoomForm = () => {
       </div>
     </form>
   );
+};
+
+const matchURL = (url: string) => {
+  const regex =
+    /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
+  return url.match(regex);
 };
