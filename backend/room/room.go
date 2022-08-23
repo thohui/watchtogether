@@ -159,7 +159,6 @@ func (r *Room) startRoomTask() {
 		case <-ticker.C:
 			if r.time.Load() < int32(r.video.Duration) {
 				time := r.time.Inc()
-				// we are only sending a sync update every 5 seconds
 				if time%5 == 0 {
 					payload := structures.VideoUpdatePayload(time, r.paused.Load())
 					data, _ := json.Marshal(payload)
