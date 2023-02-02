@@ -12,7 +12,10 @@ export const Video = () => {
   const size = useWindowSize();
   useEffect(() => {
     if (ref.current) {
-      ref.current.seekTo(time);
+      // only seek if there's a desync
+      if (time - ref.current.getCurrentTime() > 1) {
+        ref.current.seekTo(time);
+      }
     }
   }, [time]);
   return (
