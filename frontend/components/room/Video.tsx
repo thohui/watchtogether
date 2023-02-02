@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import ReactPlayer from "react-player";
 
 import { useRoomStore } from "../../hooks/store";
@@ -18,23 +18,23 @@ export const Video = () => {
       }
     }
   }, [time]);
+
+  useLayoutEffect(() => {
+    if (paused) {
+      document.querySelector("video")?.pause();
+    } else {
+      document.querySelector("video")?.play();
+    }
+  }, [paused]);
+
   return (
     <ReactPlayer
-      playing={!paused}
       ref={ref}
+      playing={!paused}
+      id="video"
       width={size.width < 640 ? size.width - 20 : 640}
       controls={true}
       url={videoId ? `https://youtube.com/watch?v=${videoId}` : undefined}
-      onPause={() => {
-        if (!paused) {
-          ref.current?.getInternalPlayer().playVideo();
-        }
-      }}
-      onPlay={() => {
-        if (paused) {
-          ref.current?.getInternalPlayer().pauseVideo();
-        }
-      }}
     />
   );
 };
