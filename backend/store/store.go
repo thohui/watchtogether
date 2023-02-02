@@ -8,16 +8,14 @@ import (
 )
 
 type Store struct {
-	mutex        sync.RWMutex
-	rooms        map[string]*room.Room
-	shutdownChan chan string
+	mutex sync.RWMutex
+	rooms map[string]*room.Room
 }
 
 func New() *Store {
 	store := &Store{
-		mutex:        sync.RWMutex{},
-		rooms:        make(map[string]*room.Room),
-		shutdownChan: make(chan string),
+		mutex: sync.RWMutex{},
+		rooms: make(map[string]*room.Room),
 	}
 	return store
 }
