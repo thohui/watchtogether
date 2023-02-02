@@ -9,7 +9,6 @@ export interface ChatMessage {
 }
 export interface InitMessage {
   video_id: string;
-  time: number;
   host: boolean;
   paused: boolean;
 }

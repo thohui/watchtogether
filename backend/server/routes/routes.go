@@ -9,9 +9,6 @@ import (
 
 func Setup(app *fiber.App, store *store.Store, youtube *youtube.YoutubeService) {
 	app.Use(cors.New())
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
 	app.Use("/ws", websocketMiddleware)
 	app.Get("/ws/:id", websocketHandler(store))
 	app.Post("/room/create", createRoomHandler(store, youtube))

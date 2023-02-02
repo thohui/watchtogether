@@ -57,7 +57,6 @@ export const WebSocketProvider = ({ roomId, children }: Props) => {
         case "init":
           const initMessage: InitMessage = unknownMessage.data;
           actions.setVideoId(initMessage.video_id);
-          actions.setTime(initMessage.time);
           actions.setHost(initMessage.host);
           actions.setPaused(initMessage.paused);
           break;

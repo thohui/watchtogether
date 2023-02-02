@@ -9,6 +9,7 @@ require (
 	github.com/joho/godotenv v1.4.0
 	github.com/json-iterator/go v1.1.12
 	github.com/teris-io/shortid v0.0.0-20220617161101-71ec9f2aa569
+	go.uber.org/atomic v1.9.0
 	google.golang.org/api v0.88.0
 )
 
@@ -28,7 +29,6 @@ require (
 	github.com/valyala/fasthttp v1.38.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e // indirect
 	golang.org/x/oauth2 v0.0.0-20220622183110-fd043fe589d2 // indirect
 	golang.org/x/sys v0.0.0-20220708085239-5a0f0661e09d // indirect

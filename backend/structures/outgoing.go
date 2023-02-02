@@ -17,16 +17,15 @@ func ChatMessagePayload(sender string, message string, owner bool) payloadBase {
 	}
 }
 
-func InitPayload(videoId string, time int32, host bool, paused bool) payloadBase {
+func InitPayload(videoId string, host bool, paused bool) payloadBase {
 	type init struct {
 		VideoId string `json:"video_id"`
-		Time    int32  `json:"time"`
 		Host    bool   `json:"host"`
 		Paused  bool   `json:"paused"`
 	}
 	return payloadBase{
 		Type: "init",
-		Data: init{videoId, time, host, paused},
+		Data: init{videoId, host, paused},
 	}
 }
 

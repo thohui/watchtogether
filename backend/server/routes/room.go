@@ -39,9 +39,9 @@ func getRoomHandler(store *store.Store) func(c *fiber.Ctx) error {
 		if err := c.BodyParser(body); err != nil || body.Id == "" {
 			return c.Status(400).SendString("Invalid request")
 		}
-		room := store.Get(body.Id)
-		if room == nil {
-			return c.Status(404).SendString("Room not found")
+		_, err := store.Get(body.Id)
+		if err != nil {
+			return c.Status(404).SendString(err.Error())
 		}
 		return c.Status(200).JSON(body)
 	}

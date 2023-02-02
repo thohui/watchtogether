@@ -1,7 +1,7 @@
 package store
 
 import (
-	"fmt"
+	"errors"
 	"sync"
 
 	"github.com/thohui/watchtogether/room"
@@ -19,14 +19,12 @@ func New() *Store {
 		rooms:        make(map[string]*room.Room),
 		shutdownChan: make(chan string),
 	}
-	go store.startStoreTask()
 	return store
 }
 
 func (s *Store) Add(room *room.Room) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	room.ShutdownChan = s.shutdownChan
 	s.rooms[room.Id] = room
 }
 
@@ -36,16 +34,23 @@ func (s *Store) Remove(id string) {
 	delete(s.rooms, id)
 }
 
-func (s *Store) Get(id string) *room.Room {
+func (s *Store) Get(id string) (*room.Room, error) {
 	s.mutex.RLock()
-	defer s.mutex.RUnlock()
-	return s.rooms[id]
+	room, ok := s.rooms[id]
+	if !ok {
+		return nil, errors.New("room does not exist")
+	}
+	if room.IsDone() {
+		s.mutex.RUnlock()
+		s.mutex.Lock()
+		delete(s.rooms, id)
+		s.mutex.Unlock()
+		return nil, errors.New("room is finished!")
+	}
+	s.mutex.RUnlock()
+	return room, nil
 }
 
-func (s *Store) startStoreTask() {
-	for {
-		id := <-s.shutdownChan
-		fmt.Printf("removed room %v from store\n", id)
-		s.Remove(id)
-	}
+// TODO: implement this
+func (s *Store) cleanRooms() {
 }
