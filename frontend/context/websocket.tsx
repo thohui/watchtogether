@@ -1,4 +1,4 @@
-import { createContext, useEffect, useRef } from "react";
+import { createContext, ReactNode, useEffect, useRef } from "react";
 import { useRoomStore } from "../hooks/store";
 import {
   ChatMessage,
@@ -33,13 +33,13 @@ export const WebSocketContext = createContext<ContextProps>({
 
 interface Props {
   roomId: string;
-  children: JSX.Element | JSX.Element[];
+  children: ReactNode;
 }
 
 export const WebSocketProvider = ({ roomId, children }: Props) => {
   const ws = useRef<WebSocket | null>(null);
-  const WEBSOCKET_URL =
-    process.env.NEXT_PUBLIC_WEBSOCKET_URL || "ws://localhost/ws";
+  const WEBSOCKET_URL = process.env.NEXT_PUBLIC_WEBSOCKET_URL ??
+    "ws://localhost/ws";
   const url = `${WEBSOCKET_URL}/${roomId}`;
   const actions = useRoomStore((state) => state.actions);
   useEffect(() => {
@@ -78,22 +78,16 @@ export const WebSocketProvider = ({ roomId, children }: Props) => {
     websocket: ws.current,
     actions: {
       sendChatMessage: (message: string) => {
-        if (ws.current) {
-          const payload = JSON.stringify({ type: "chat", message: message });
-          ws.current.send(payload);
-        }
+        const payload = JSON.stringify({ type: "chat", message: message });
+        ws.current?.send(payload);
       },
       sendPauseMessage: () => {
-        if (ws.current) {
-          const payload = JSON.stringify({ type: "pause" });
-          ws.current.send(payload);
-        }
+        const payload = JSON.stringify({ type: "pause" });
+        ws.current?.send(payload);
       },
       sendResumeMessage: () => {
-        if (ws.current) {
-          const payload = JSON.stringify({ type: "resume" });
-          ws.current.send(payload);
-        }
+        const payload = JSON.stringify({ type: "resume" });
+        ws.current?.send(payload);
       },
     },
   };
