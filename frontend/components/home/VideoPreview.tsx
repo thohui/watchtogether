@@ -18,6 +18,6 @@ export const VideoPreview = ({ id }: Props) => {
     <ReactPlayer
       url={`https://youtube.com/watch?v=${id}`}
       width={size.width < 640 ? size.width : 640}
-    ></ReactPlayer>
+    />
   );
 };

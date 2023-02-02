@@ -1,6 +1,5 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { Navbar } from "../../components/navigation/Navbar";
 import { Chat } from "../../components/room/Chat";
 import { PauseAction } from "../../components/room/PauseAction";
 import { Video } from "../../components/room/Video";
@@ -24,16 +23,14 @@ const Room: NextPage = () => {
   if (!data || error) {
     return <p>Room does not exist</p>;
   }
+
   return (
     <WebSocketProvider roomId={id as string}>
-      <div className="container mx-auto">
-        <Navbar />
-        <div className="grid place-items-center pt-8 max-h-1/2">
-          <div className="flex flex-col space-y-3">
-            <Video />
-            <PauseAction />
-            <Chat />
-          </div>
+      <div className="flex h-screen justify-center items-center">
+        <div className="flex flex-col space-y-3">
+          <Video />
+          <PauseAction />
+          <Chat />
         </div>
       </div>
     </WebSocketProvider>

@@ -24,6 +24,7 @@ export const CreateRoomForm = () => {
       data.id && router.push(`/room/${data.id}`);
     }
   };
+
   const url = watch("video_url");
 
   useEffect(() => {
@@ -57,7 +58,7 @@ export const CreateRoomForm = () => {
 
       <div className="flex flex-col items-center py-5">
         <VideoPreview id={videoId} />
-        <button type="submit" className="btn my-5 w-1/2" disabled={!videoId}>
+        <button type="submit" className="btn my-5 w-full" disabled={!videoId}>
           Submit
         </button>
       </div>
